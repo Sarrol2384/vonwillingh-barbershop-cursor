@@ -82,3 +82,27 @@ body {
 .btn-secondary:hover {
   background: rgba(201, 169, 98, 0.2);
 }
+
+/* Admin dashboard — override public site dark theme */
+.admin-shell {
+  background: #f4f4f5;
+  color: #18181b;
+}
+
+.admin-shell input,
+.admin-shell textarea,
+.admin-shell select {
+  color: #18181b;
+  background-color: #ffffff;
+}
+
+.admin-shell input::placeholder,
+.admin-shell textarea::placeholder {
+  color: #a1a1aa;
+}
+
+.admin-shell input:disabled,
+.admin-shell textarea:disabled {
+  color: #71717a;
+  background-color: #f4f4f5;
+}

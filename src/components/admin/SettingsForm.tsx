@@ -10,6 +10,9 @@ type Props = {
 
 const DAYS = getOrderedDays();
 
+const inputClassName =
+  "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 shadow-sm focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-200 disabled:bg-zinc-100 disabled:text-zinc-500";
+
 export function SettingsForm({ initialSettings }: Props) {
   const [settings, setSettings] = useState<BusinessSettings>(initialSettings);
   const [saving, setSaving] = useState(false);
@@ -42,7 +45,11 @@ export function SettingsForm({ initialSettings }: Props) {
     setSettings((prev) => ({ ...prev, [key]: value }));
   }
 
-  function updateHour(day: Day, field: keyof BusinessSettings["hours"][Day], value: string | boolean) {
+  function updateHour(
+    day: Day,
+    field: keyof BusinessSettings["hours"][Day],
+    value: string | boolean,
+  ) {
     setSettings((prev) => ({
       ...prev,
       hours: {
@@ -78,7 +85,10 @@ export function SettingsForm({ initialSettings }: Props) {
     }));
   }
 
-  function updateBarber(field: keyof BusinessSettings["barber"], value: string | number) {
+  function updateBarber(
+    field: keyof BusinessSettings["barber"],
+    value: string | number,
+  ) {
     setSettings((prev) => ({
       ...prev,
       barber: { ...prev.barber, [field]: value },
@@ -86,32 +96,36 @@ export function SettingsForm({ initialSettings }: Props) {
   }
 
   return (
-    <form onSubmit={handleSave} className="mx-auto max-w-3xl space-y-8 p-6">
-      <div className="flex items-center justify-between">
+    <form onSubmit={handleSave} className="mx-auto max-w-3xl space-y-8 p-6 pb-12">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">Admin Dashboard</h1>
-          <p className="text-sm text-zinc-500">Manage VonWillingh Barbershop content</p>
+          <p className="mt-1 text-sm text-zinc-600">
+            Manage VonWillingh Barbershop content
+          </p>
         </div>
         <div className="flex gap-3">
           <a
             href="/"
             target="_blank"
-            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm hover:bg-zinc-50"
+            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50"
           >
             Preview site
           </a>
           <button
             type="button"
             onClick={handleLogout}
-            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm hover:bg-zinc-50"
+            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50"
           >
             Log out
           </button>
         </div>
       </div>
 
-      <fieldset className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5">
-        <legend className="px-2 text-lg font-semibold">Business</legend>
+      <fieldset className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <legend className="px-2 text-lg font-semibold text-zinc-900">
+          Business
+        </legend>
         <Input
           label="Business name"
           value={settings.businessName}
@@ -129,16 +143,30 @@ export function SettingsForm({ initialSettings }: Props) {
         />
       </fieldset>
 
-      <fieldset className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5">
-        <legend className="px-2 text-lg font-semibold">Contact</legend>
-        <Input label="Phone" value={settings.phone} onChange={(v) => updateField("phone", v)} />
+      <fieldset className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <legend className="px-2 text-lg font-semibold text-zinc-900">
+          Contact
+        </legend>
+        <Input
+          label="Phone"
+          value={settings.phone}
+          onChange={(v) => updateField("phone", v)}
+        />
         <Input
           label="WhatsApp number (digits only, e.g. 27821234567)"
           value={settings.whatsapp}
           onChange={(v) => updateField("whatsapp", v)}
         />
-        <Input label="Email" value={settings.email} onChange={(v) => updateField("email", v)} />
-        <Input label="Address" value={settings.address} onChange={(v) => updateField("address", v)} />
+        <Input
+          label="Email"
+          value={settings.email}
+          onChange={(v) => updateField("email", v)}
+        />
+        <Input
+          label="Address"
+          value={settings.address}
+          onChange={(v) => updateField("address", v)}
+        />
         <Input
           label="Google Maps URL"
           value={settings.mapsUrl}
@@ -165,12 +193,17 @@ export function SettingsForm({ initialSettings }: Props) {
         />
       </fieldset>
 
-      <fieldset className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5">
-        <legend className="px-2 text-lg font-semibold">Opening Hours</legend>
+      <fieldset className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <legend className="px-2 text-lg font-semibold text-zinc-900">
+          Opening Hours
+        </legend>
         {DAYS.map((day) => (
-          <div key={day} className="grid gap-3 rounded-lg bg-zinc-50 p-3 sm:grid-cols-4">
-            <span className="font-medium text-zinc-700">{getDayLabel(day)}</span>
-            <label className="flex items-center gap-2 text-sm">
+          <div
+            key={day}
+            className="grid gap-3 rounded-lg border border-zinc-100 bg-zinc-50 p-3 sm:grid-cols-4"
+          >
+            <span className="font-medium text-zinc-800">{getDayLabel(day)}</span>
+            <label className="flex items-center gap-2 text-sm text-zinc-800">
               <input
                 type="checkbox"
                 checked={settings.hours[day].closed}
@@ -194,10 +227,15 @@ export function SettingsForm({ initialSettings }: Props) {
         ))}
       </fieldset>
 
-      <fieldset className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5">
-        <legend className="px-2 text-lg font-semibold">Services</legend>
+      <fieldset className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <legend className="px-2 text-lg font-semibold text-zinc-900">
+          Services
+        </legend>
         {settings.services.map((service, index) => (
-          <div key={index} className="space-y-3 rounded-lg border border-zinc-100 p-4">
+          <div
+            key={index}
+            className="space-y-3 rounded-lg border border-zinc-200 p-4"
+          >
             <div className="grid gap-3 sm:grid-cols-2">
               <Input
                 label="Name"
@@ -223,7 +261,7 @@ export function SettingsForm({ initialSettings }: Props) {
             <button
               type="button"
               onClick={() => removeService(index)}
-              className="text-sm text-red-600 hover:underline"
+              className="text-sm font-medium text-red-600 hover:underline"
             >
               Remove service
             </button>
@@ -232,14 +270,16 @@ export function SettingsForm({ initialSettings }: Props) {
         <button
           type="button"
           onClick={addService}
-          className="text-sm font-medium text-zinc-700 hover:underline"
+          className="text-sm font-medium text-zinc-800 hover:underline"
         >
           + Add service
         </button>
       </fieldset>
 
-      <fieldset className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5">
-        <legend className="px-2 text-lg font-semibold">Barber Profile</legend>
+      <fieldset className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <legend className="px-2 text-lg font-semibold text-zinc-900">
+          Barber Profile
+        </legend>
         <Input
           label="Name"
           value={settings.barber.name}
@@ -261,26 +301,30 @@ export function SettingsForm({ initialSettings }: Props) {
           onChange={(v) => updateBarber("tagline", v)}
         />
         <label className="block text-sm">
-          <span className="mb-1 block font-medium text-zinc-700">Bio</span>
+          <span className="mb-1 block font-medium text-zinc-800">Bio</span>
           <textarea
             value={settings.barber.bio}
             onChange={(e) => updateBarber("bio", e.target.value)}
             rows={5}
-            className="w-full rounded-lg border border-zinc-300 px-3 py-2"
+            className={inputClassName}
           />
         </label>
       </fieldset>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <button
           type="submit"
           disabled={saving}
-          className="rounded-lg bg-zinc-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
+          className="rounded-lg bg-zinc-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
         >
           {saving ? "Saving…" : "Save changes"}
         </button>
         {message && (
-          <p className={`text-sm ${message.includes("Failed") ? "text-red-600" : "text-green-600"}`}>
+          <p
+            className={`text-sm font-medium ${
+              message.includes("Failed") ? "text-red-600" : "text-green-700"
+            }`}
+          >
             {message}
           </p>
         )}
@@ -302,13 +346,13 @@ function Input({
 }) {
   return (
     <label className="block text-sm">
-      <span className="mb-1 block font-medium text-zinc-700">{label}</span>
+      <span className="mb-1 block font-medium text-zinc-800">{label}</span>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="w-full rounded-lg border border-zinc-300 px-3 py-2 disabled:bg-zinc-100"
+        className={inputClassName}
       />
     </label>
   );
