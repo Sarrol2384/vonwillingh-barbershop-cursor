@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/auth";
 import { getSettings, updateSettings } from "@/lib/settings";
@@ -23,6 +24,8 @@ export async function PUT(request: Request) {
   try {
     const body = (await request.json()) as BusinessSettings;
     const updated = await updateSettings(body);
+    revalidatePath("/");
+    revalidatePath("/admin");
     return NextResponse.json(updated);
   } catch (error) {
     const message =

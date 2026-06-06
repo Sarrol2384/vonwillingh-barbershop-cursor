@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
 import { DEFAULT_SETTINGS } from "./default-settings";
@@ -68,6 +69,7 @@ async function updateSettingsInSupabase(
 }
 
 export async function getSettings(): Promise<BusinessSettings> {
+  noStore();
   if (isSupabaseConfigured()) {
     return getSettingsFromSupabase();
   }
