@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+:root {
+  --charcoal: #1a1a1a;
+  --charcoal-light: #242424;
+  --cream: #f5f0e8;
+  --gold: #c9a962;
+  --gold-light: #dfc88a;
+  --barber-red: #c41e3a;
+}
+
+@theme inline {
+  --color-charcoal: var(--charcoal);
+  --color-charcoal-light: var(--charcoal-light);
+  --color-cream: var(--cream);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-barber-red: var(--barber-red);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-playfair);
+}
+
+body {
+  background: var(--charcoal);
+  color: var(--cream);
+}
+
+.font-display {
+  font-family: var(--font-playfair), Georgia, serif;
+}
+
+.section-title {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--cream);
+  letter-spacing: 0.02em;
+}
+
+.card {
+  background: linear-gradient(
+    145deg,
+    rgba(36, 36, 36, 0.95) 0%,
+    rgba(26, 26, 26, 0.98) 100%
+  );
+  border: 1px solid rgba(201, 169, 98, 0.15);
+  border-radius: 1rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: #25d366;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  transition: background 0.15s;
+}
+
+.btn-primary:hover {
+  background: #20bd5a;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(201, 169, 98, 0.4);
+  background: rgba(201, 169, 98, 0.1);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gold);
+  transition: background 0.15s;
+}
+
+.btn-secondary:hover {
+  background: rgba(201, 169, 98, 0.2);
+}
