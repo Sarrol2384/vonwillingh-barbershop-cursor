@@ -64,7 +64,7 @@ values (
       "period": "per month",
       "description": "Subscribe and save every month — perfect if you like to stay sharp.",
       "benefits": [
-        "1 free beard trim",
+        "Trim",
         "1 refresh fade"
       ],
       "whatsappMessage": "Hi Kobus, I''d like to subscribe to the R30/month membership at VonWillingh Barbershop."
