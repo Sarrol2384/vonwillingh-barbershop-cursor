@@ -69,6 +69,7 @@ Admin saves need a database on Vercel (the server filesystem is read-only).
      - `appointment_reminder` — `Hi {{1}}, reminder for your {{4}} at VonWillingh Barbershop on {{2}} at {{3}}. See you soon!`
      - `booking_confirmation` — same body (or customize)
   3. Set `WHATSAPP_ACCESS_TOKEN` and `WHATSAPP_PHONE_NUMBER_ID` in Vercel
+- Reminder cron runs **once daily at 6:00 SAST** (Vercel Hobby limit). On Pro you can change `vercel.json` to an hourly schedule.
 
 > **Important:** Never expose `SUPABASE_SERVICE_ROLE_KEY` in client-side code or commit it to git. It is only used in server API routes.
 
