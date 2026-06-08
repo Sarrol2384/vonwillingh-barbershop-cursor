@@ -1,4 +1,5 @@
 import { DEFAULT_SETTINGS } from "./default-settings";
+import { normalizeBenefitList } from "./membership";
 import type { BusinessSettings } from "./types";
 
 export function normalizeSettings(
@@ -12,8 +13,9 @@ export function normalizeSettings(
     subscription: {
       ...DEFAULT_SETTINGS.subscription,
       ...(subscription ?? {}),
-      benefits:
+      benefits: normalizeBenefitList(
         subscription?.benefits ?? DEFAULT_SETTINGS.subscription.benefits,
+      ),
     },
     social: { ...DEFAULT_SETTINGS.social, ...(social ?? {}) },
     barber: { ...DEFAULT_SETTINGS.barber, ...(barber ?? {}) },

@@ -2,6 +2,26 @@ import type { MemberBenefitUsage } from "./types";
 
 export type MembershipStatus = "active" | "expired";
 
+const BENEFIT_ALIASES: Record<string, string> = {
+  "1 free beard trim": "Trim",
+  "free beard trim": "Trim",
+  "1 trim": "Trim",
+  trim: "Trim",
+};
+
+export function normalizeBenefitName(name: string): string {
+  const trimmed = name.trim();
+  return BENEFIT_ALIASES[trimmed] ?? BENEFIT_ALIASES[trimmed.toLowerCase()] ?? trimmed;
+}
+
+export function benefitNamesMatch(a: string, b: string): boolean {
+  return normalizeBenefitName(a) === normalizeBenefitName(b);
+}
+
+export function normalizeBenefitList(benefits: string[]): string[] {
+  return benefits.map(normalizeBenefitName);
+}
+
 export function addOneMonth(dateStr: string): string {
   const date = new Date(`${dateStr}T12:00:00`);
   date.setMonth(date.getMonth() + 1);
@@ -47,7 +67,7 @@ export function getBenefitUsageForPeriod(
   expiresAt: string,
 ): MemberBenefitUsage | undefined {
   return getBenefitUsagesInPeriod(usages, lastPaymentDate, expiresAt).find(
-    (usage) => usage.benefitName === benefitName,
+    (usage) => benefitNamesMatch(usage.benefitName, benefitName),
   );
 }
 

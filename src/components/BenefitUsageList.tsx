@@ -1,4 +1,4 @@
-import { formatMembershipDate } from "@/lib/membership";
+import { benefitNamesMatch, formatMembershipDate } from "@/lib/membership";
 
 type BenefitUsage = {
   benefitName: string;
@@ -21,7 +21,9 @@ export function BenefitUsageList({
   return (
     <ul className="space-y-2">
       {benefits.map((benefit) => {
-        const usage = usages.find((item) => item.benefitName === benefit);
+        const usage = usages.find((item) =>
+          benefitNamesMatch(item.benefitName, benefit),
+        );
 
         return (
           <li

@@ -7,6 +7,7 @@ import { getSupabaseAdmin, isSupabaseConfigured } from "./supabase";
 import {
   getBenefitUsageForPeriod,
   getMembershipStatus,
+  normalizeBenefitName,
 } from "./membership";
 import type {
   CreateMemberInput,
@@ -435,14 +436,15 @@ export async function recordBenefitUsage(
   input: RecordBenefitUsageInput,
   allowedBenefits: string[],
 ): Promise<Member> {
-  const benefitName = input.benefitName.trim();
+  const benefitName = normalizeBenefitName(input.benefitName);
   const usedOn = input.usedOn ?? new Date().toISOString().slice(0, 10);
+  const normalizedAllowed = allowedBenefits.map(normalizeBenefitName);
 
   if (!benefitName) {
     throw new Error("Benefit name is required.");
   }
 
-  if (!allowedBenefits.includes(benefitName)) {
+  if (!normalizedAllowed.includes(benefitName)) {
     throw new Error("Invalid membership benefit.");
   }
 
