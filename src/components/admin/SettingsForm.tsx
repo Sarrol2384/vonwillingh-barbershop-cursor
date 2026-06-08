@@ -1,11 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import type { BusinessSettings, Day, Service } from "@/lib/types";
+import type {
+  BusinessSettings,
+  Day,
+  Service,
+  SubscriptionPlan,
+} from "@/lib/types";
 import { getDayLabel, getOrderedDays } from "@/lib/hours";
+import { normalizeSettings } from "@/lib/normalize-settings";
 
 type Props = {
-  initialSettings: BusinessSettings;
+  initialSettings: Partial<BusinessSettings>;
 };
 
 const DAYS = getOrderedDays();
@@ -14,7 +20,9 @@ const inputClassName =
   "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 shadow-sm focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-200 disabled:bg-zinc-100 disabled:text-zinc-500";
 
 export function SettingsForm({ initialSettings }: Props) {
-  const [settings, setSettings] = useState<BusinessSettings>(initialSettings);
+  const [settings, setSettings] = useState<BusinessSettings>(() =>
+    normalizeSettings(initialSettings),
+  );
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -95,6 +103,16 @@ export function SettingsForm({ initialSettings }: Props) {
     }));
   }
 
+  function updateSubscription(
+    field: keyof SubscriptionPlan,
+    value: string | boolean | string[],
+  ) {
+    setSettings((prev) => ({
+      ...prev,
+      subscription: { ...prev.subscription, [field]: value },
+    }));
+  }
+
   return (
     <form onSubmit={handleSave} className="mx-auto max-w-3xl space-y-8 p-6 pb-12">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -104,7 +122,13 @@ export function SettingsForm({ initialSettings }: Props) {
             Manage VonWillingh Barbershop content
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
+          <a
+            href="/admin/bookings"
+            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50"
+          >
+            Bookings
+          </a>
           <a
             href="/"
             target="_blank"
@@ -274,6 +298,63 @@ export function SettingsForm({ initialSettings }: Props) {
         >
           + Add service
         </button>
+      </fieldset>
+
+      <fieldset className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <legend className="px-2 text-lg font-semibold text-zinc-900">
+          Monthly Membership
+        </legend>
+        <label className="flex items-center gap-2 text-sm text-zinc-800">
+          <input
+            type="checkbox"
+            checked={settings.subscription.enabled}
+            onChange={(e) => updateSubscription("enabled", e.target.checked)}
+          />
+          Show membership section on site
+        </label>
+        <Input
+          label="Title"
+          value={settings.subscription.title}
+          onChange={(v) => updateSubscription("title", v)}
+        />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Input
+            label="Price"
+            value={settings.subscription.price}
+            onChange={(v) => updateSubscription("price", v)}
+          />
+          <Input
+            label="Period (e.g. per month)"
+            value={settings.subscription.period}
+            onChange={(v) => updateSubscription("period", v)}
+          />
+        </div>
+        <Input
+          label="Description"
+          value={settings.subscription.description}
+          onChange={(v) => updateSubscription("description", v)}
+        />
+        <label className="block text-sm">
+          <span className="mb-1 block font-medium text-zinc-800">
+            Benefits (one per line)
+          </span>
+          <textarea
+            value={settings.subscription.benefits.join("\n")}
+            onChange={(e) =>
+              updateSubscription(
+                "benefits",
+                e.target.value.split("\n").filter((line) => line.trim()),
+              )
+            }
+            rows={4}
+            className={inputClassName}
+          />
+        </label>
+        <Input
+          label="WhatsApp subscribe message"
+          value={settings.subscription.whatsappMessage}
+          onChange={(v) => updateSubscription("whatsappMessage", v)}
+        />
       </fieldset>
 
       <fieldset className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">

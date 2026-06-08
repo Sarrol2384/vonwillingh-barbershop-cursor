@@ -1,7 +1,7 @@
 import { SettingsForm } from "@/components/admin/SettingsForm";
-import { getSettings } from "@/lib/settings";
+import { getSettings, normalizeSettings } from "@/lib/settings";
 
 export default async function AdminPage() {
-  const settings = await getSettings();
+  const settings = normalizeSettings(await getSettings());
   return <SettingsForm initialSettings={settings} />;
 }

@@ -20,6 +20,16 @@ export type Service = {
   description?: string;
 };
 
+export type SubscriptionPlan = {
+  enabled: boolean;
+  title: string;
+  price: string;
+  period: string;
+  description: string;
+  benefits: string[];
+  whatsappMessage: string;
+};
+
 export type BarberProfile = {
   name: string;
   title: string;
@@ -28,6 +38,34 @@ export type BarberProfile = {
   tagline: string;
   bio: string;
   bioShort: string;
+};
+
+export type BookingStatus = "confirmed" | "cancelled" | "completed";
+
+export type Booking = {
+  id: string;
+  clientName: string;
+  clientPhone: string;
+  clientEmail: string | null;
+  serviceName: string;
+  serviceDuration: number;
+  bookingDate: string;
+  bookingTime: string;
+  status: BookingStatus;
+  reminderSent: boolean;
+  notes: string | null;
+  createdAt: string;
+};
+
+export type CreateBookingInput = {
+  clientName: string;
+  clientPhone: string;
+  clientEmail?: string;
+  serviceName: string;
+  serviceDuration: number;
+  bookingDate: string;
+  bookingTime: string;
+  notes?: string;
 };
 
 export type BusinessSettings = {
@@ -42,6 +80,7 @@ export type BusinessSettings = {
   timezone: string;
   hours: Record<Day, DayHours>;
   services: Service[];
+  subscription: SubscriptionPlan;
   whatsappMessage: string;
   social: {
     instagram?: string;

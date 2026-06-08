@@ -26,6 +26,8 @@ Sign in at `/admin` to update:
 - Services and prices
 - Kobus's bio and profile details
 
+View and manage appointments at **`/admin/bookings`**.
+
 ## Deploy to Vercel + Supabase
 
 Admin saves need a database on Vercel (the server filesystem is read-only).
@@ -33,7 +35,9 @@ Admin saves need a database on Vercel (the server filesystem is read-only).
 ### 1. Create a Supabase project
 
 1. Go to [supabase.com](https://supabase.com) and create a free project.
-2. Open **SQL Editor** and run the migration in [`supabase/migrations/001_business_settings.sql`](supabase/migrations/001_business_settings.sql).
+2. Open **SQL Editor** and run both migrations:
+   - [`supabase/migrations/001_business_settings.sql`](supabase/migrations/001_business_settings.sql)
+   - [`supabase/migrations/002_bookings.sql`](supabase/migrations/002_bookings.sql)
 3. In **Project Settings → API**, copy:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
    - **service_role** key (secret) → `SUPABASE_SERVICE_ROLE_KEY`
@@ -49,8 +53,22 @@ Admin saves need a database on Vercel (the server filesystem is read-only).
 | `SESSION_SECRET` | Long random string |
 | `NEXT_PUBLIC_SUPABASE_URL` | From Supabase API settings |
 | `SUPABASE_SERVICE_ROLE_KEY` | From Supabase API settings (service_role) |
+| `WHATSAPP_ACCESS_TOKEN` | Meta WhatsApp Cloud API token |
+| `WHATSAPP_PHONE_NUMBER_ID` | From Meta Developer → WhatsApp → API Setup |
+| `CRON_SECRET` | Random string (Vercel sets this for cron jobs) |
 
 3. Deploy. The site will read/write settings from Supabase automatically.
+
+## Online booking & reminders
+
+- Clients book at **Book an Appointment** on the public site (`/#book`)
+- Kobus views upcoming bookings at **`/admin/bookings`**
+- **WhatsApp only** — confirmations and 24h reminders go to the client's phone via Meta WhatsApp Cloud API:
+  1. Create a [Meta Business](https://business.facebook.com) app with WhatsApp
+  2. Add approved **UTILITY** templates:
+     - `appointment_reminder` — `Hi {{1}}, reminder for your {{4}} at VonWillingh Barbershop on {{2}} at {{3}}. See you soon!`
+     - `booking_confirmation` — same body (or customize)
+  3. Set `WHATSAPP_ACCESS_TOKEN` and `WHATSAPP_PHONE_NUMBER_ID` in Vercel
 
 > **Important:** Never expose `SUPABASE_SERVICE_ROLE_KEY` in client-side code or commit it to git. It is only used in server API routes.
 

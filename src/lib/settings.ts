@@ -2,8 +2,11 @@ import { unstable_noStore as noStore } from "next/cache";
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
 import { DEFAULT_SETTINGS } from "./default-settings";
+import { normalizeSettings } from "./normalize-settings";
 import { getSupabaseAdmin, isSupabaseConfigured } from "./supabase";
 import type { BusinessSettings } from "./types";
+
+export { normalizeSettings } from "./normalize-settings";
 
 const DATA_PATH = path.join(process.cwd(), "data", "business.json");
 const SETTINGS_ROW_ID = 1;
@@ -11,7 +14,7 @@ const SETTINGS_ROW_ID = 1;
 async function getSettingsFromFile(): Promise<BusinessSettings> {
   try {
     const raw = await readFile(DATA_PATH, "utf-8");
-    return JSON.parse(raw) as BusinessSettings;
+    return normalizeSettings(JSON.parse(raw) as Partial<BusinessSettings>);
   } catch {
     return DEFAULT_SETTINGS;
   }
@@ -48,7 +51,7 @@ async function getSettingsFromSupabase(): Promise<BusinessSettings> {
     return DEFAULT_SETTINGS;
   }
 
-  return data.settings as BusinessSettings;
+  return normalizeSettings(data.settings as Partial<BusinessSettings>);
 }
 
 async function updateSettingsInSupabase(

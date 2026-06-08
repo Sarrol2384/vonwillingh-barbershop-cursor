@@ -1,0 +1,16 @@
+[
+  {
+    "id": "0f265860-c961-49c3-a3ca-f2a1a10d97c8",
+    "clientName": "Cyril",
+    "clientPhone": "0812163629",
+    "clientEmail": null,
+    "serviceName": "Classic Haircut",
+    "serviceDuration": 30,
+    "bookingDate": "2026-06-13",
+    "bookingTime": "17:00",
+    "status": "confirmed",
+    "reminderSent": false,
+    "notes": null,
+    "createdAt": "2026-06-08T14:29:47.987Z"
+  }
+]

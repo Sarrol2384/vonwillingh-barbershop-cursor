@@ -1,9 +1,11 @@
 import { BarberPole } from "@/components/BarberPole";
+import { BookingSection } from "@/components/BookingSection";
 import { ContactSection } from "@/components/ContactSection";
 import { Hero } from "@/components/Hero";
 import { HoursSection } from "@/components/HoursSection";
 import { MeetBarber } from "@/components/MeetBarber";
 import { ServicesSection } from "@/components/ServicesSection";
+import { SubscriptionSection } from "@/components/SubscriptionSection";
 import { StickyBookingBar } from "@/components/StickyBookingBar";
 import { getSettings } from "@/lib/settings";
 
@@ -16,6 +18,8 @@ export default async function HomePage() {
       <Hero settings={settings} />
       <MeetBarber settings={settings} />
       <ServicesSection settings={settings} />
+      <BookingSection settings={settings} />
+      <SubscriptionSection settings={settings} />
       <HoursSection settings={settings} />
       <ContactSection settings={settings} />
 
