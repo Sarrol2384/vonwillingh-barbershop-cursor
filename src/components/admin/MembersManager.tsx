@@ -1,8 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { BenefitUsageList } from "@/components/BenefitUsageList";
 import {
   formatMembershipDate,
+  getBenefitUsageForPeriod,
+  getBenefitUsagesInPeriod,
   getMembershipStatus,
 } from "@/lib/membership";
 import type { Member } from "@/lib/types";
@@ -18,12 +21,14 @@ function todayString(): string {
 
 export function MembersManager() {
   const [members, setMembers] = useState<Member[]>([]);
+  const [benefits, setBenefits] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [showForm, setShowForm] = useState(false);
   const [renewingId, setRenewingId] = useState<string | null>(null);
+  const [recordingBenefit, setRecordingBenefit] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const [clientName, setClientName] = useState("");
@@ -44,7 +49,8 @@ export function MembersManager() {
       return;
     }
 
-    setMembers(data as Member[]);
+    setMembers(data.members as Member[]);
+    setBenefits((data.benefits as string[]) ?? []);
   }, []);
 
   useEffect(() => {
@@ -117,6 +123,30 @@ export function MembersManager() {
     setMessage(
       `Payment recorded for ${member.clientName}. Valid until ${formatMembershipDate(data.expiresAt)}.`,
     );
+    await loadMembers();
+  }
+
+  async function handleRecordBenefit(member: Member, benefitName: string) {
+    const key = `${member.id}:${benefitName}`;
+    setRecordingBenefit(key);
+    setMessage("");
+    setError("");
+
+    const res = await fetch(`/api/members/${member.id}/benefits`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ benefitName }),
+    });
+
+    const data = await res.json();
+    setRecordingBenefit(null);
+
+    if (!res.ok) {
+      setError(data.error ?? "Failed to record benefit visit.");
+      return;
+    }
+
+    setMessage(`${benefitName} recorded for ${member.clientName}.`);
     await loadMembers();
   }
 
@@ -304,6 +334,54 @@ export function MembersManager() {
                   {member.notes && (
                     <p className="text-sm text-zinc-500">Note: {member.notes}</p>
                   )}
+                  {benefits.length > 0 && (
+                    <div className="pt-2">
+                      <p className="mb-2 text-sm font-medium text-zinc-800">
+                        Benefits this month
+                      </p>
+                      <BenefitUsageList
+                        benefits={benefits}
+                        usages={getBenefitUsagesInPeriod(
+                          member.benefitUsages ?? [],
+                          member.lastPaymentDate,
+                          member.expiresAt,
+                        ).map((usage) => ({
+                          benefitName: usage.benefitName,
+                          usedOn: usage.usedOn,
+                        }))}
+                        variant="light"
+                      />
+                      {isActive && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {benefits.map((benefit) => {
+                            const used = getBenefitUsageForPeriod(
+                              member.benefitUsages ?? [],
+                              benefit,
+                              member.lastPaymentDate,
+                              member.expiresAt,
+                            );
+                            const key = `${member.id}:${benefit}`;
+
+                            return (
+                              <button
+                                key={benefit}
+                                type="button"
+                                disabled={Boolean(used) || recordingBenefit === key}
+                                onClick={() => handleRecordBenefit(member, benefit)}
+                                className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-800 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {recordingBenefit === key
+                                  ? "Saving…"
+                                  : used
+                                    ? "Already used"
+                                    : `Mark: ${benefit}`}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {member.payments && member.payments.length > 0 && (
                     <details className="text-sm text-zinc-600">
                       <summary className="cursor-pointer font-medium text-zinc-700">
@@ -314,6 +392,21 @@ export function MembersManager() {
                           <li key={payment.id}>
                             {formatMembershipDate(payment.paymentDate)} —{" "}
                             {payment.amount}
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                  {member.benefitUsages && member.benefitUsages.length > 0 && (
+                    <details className="text-sm text-zinc-600">
+                      <summary className="cursor-pointer font-medium text-zinc-700">
+                        Benefit visit history ({member.benefitUsages.length})
+                      </summary>
+                      <ul className="mt-2 space-y-1 pl-1">
+                        {member.benefitUsages.map((usage) => (
+                          <li key={usage.id}>
+                            {formatMembershipDate(usage.usedOn)} —{" "}
+                            {usage.benefitName}
                           </li>
                         ))}
                       </ul>

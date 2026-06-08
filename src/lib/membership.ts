@@ -1,3 +1,5 @@
+import type { MemberBenefitUsage } from "./types";
+
 export type MembershipStatus = "active" | "expired";
 
 export function addOneMonth(dateStr: string): string {
@@ -18,6 +20,35 @@ export function formatMembershipDate(dateStr: string): string {
     month: "long",
     year: "numeric",
   });
+}
+
+export function isInMembershipPeriod(
+  dateStr: string,
+  lastPaymentDate: string,
+  expiresAt: string,
+): boolean {
+  return dateStr >= lastPaymentDate && dateStr <= expiresAt;
+}
+
+export function getBenefitUsagesInPeriod(
+  usages: MemberBenefitUsage[],
+  lastPaymentDate: string,
+  expiresAt: string,
+): MemberBenefitUsage[] {
+  return usages.filter((usage) =>
+    isInMembershipPeriod(usage.usedOn, lastPaymentDate, expiresAt),
+  );
+}
+
+export function getBenefitUsageForPeriod(
+  usages: MemberBenefitUsage[],
+  benefitName: string,
+  lastPaymentDate: string,
+  expiresAt: string,
+): MemberBenefitUsage | undefined {
+  return getBenefitUsagesInPeriod(usages, lastPaymentDate, expiresAt).find(
+    (usage) => usage.benefitName === benefitName,
+  );
 }
 
 export function daysUntilExpiry(expiresAt: string): number {

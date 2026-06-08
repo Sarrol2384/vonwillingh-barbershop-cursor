@@ -1,3 +1,4 @@
+import { BenefitUsageList } from "@/components/BenefitUsageList";
 import {
   daysUntilExpiry,
   formatMembershipDate,
@@ -12,6 +13,8 @@ type CardData = {
   lastPaymentDate: string;
   expiresAt: string;
   status: MembershipStatus;
+  benefits?: string[];
+  benefitUsages?: { benefitName: string; usedOn: string }[];
 };
 
 type Props = {
@@ -79,6 +82,18 @@ export function MembershipCard({ settings, member }: Props) {
             </p>
           </div>
         </div>
+
+        {member.benefits && member.benefits.length > 0 && (
+          <div>
+            <p className="mb-2 text-xs uppercase tracking-wide text-zinc-500">
+              This month&apos;s benefits
+            </p>
+            <BenefitUsageList
+              benefits={member.benefits}
+              usages={member.benefitUsages ?? []}
+            />
+          </div>
+        )}
 
         {isActive ? (
           <p className="text-sm text-zinc-400">

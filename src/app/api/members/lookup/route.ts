@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { getMemberByPhone } from "@/lib/members";
-import { getMembershipStatus } from "@/lib/membership";
+import {
+  getBenefitUsagesInPeriod,
+  getMembershipStatus,
+} from "@/lib/membership";
+import { getSettings, normalizeSettings } from "@/lib/settings";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -23,12 +27,24 @@ export async function GET(request: Request) {
       );
     }
 
+    const settings = normalizeSettings(await getSettings());
+    const benefitUsages = getBenefitUsagesInPeriod(
+      member.benefitUsages ?? [],
+      member.lastPaymentDate,
+      member.expiresAt,
+    );
+
     return NextResponse.json({
       memberNumber: member.memberNumber,
       clientName: member.clientName,
       lastPaymentDate: member.lastPaymentDate,
       expiresAt: member.expiresAt,
       status: getMembershipStatus(member.expiresAt),
+      benefits: settings.subscription.benefits,
+      benefitUsages: benefitUsages.map((usage) => ({
+        benefitName: usage.benefitName,
+        usedOn: usage.usedOn,
+      })),
     });
   } catch (error) {
     const message =

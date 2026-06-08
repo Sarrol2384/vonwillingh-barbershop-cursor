@@ -16,6 +16,8 @@ type LookupResult = {
   lastPaymentDate: string;
   expiresAt: string;
   status: MembershipStatus;
+  benefits: string[];
+  benefitUsages: { benefitName: string; usedOn: string }[];
 };
 
 export function SubscriptionSection({ settings }: Props) {

@@ -41,6 +41,7 @@ Admin saves need a database on Vercel (the server filesystem is read-only).
    - [`supabase/migrations/001_business_settings.sql`](supabase/migrations/001_business_settings.sql)
    - [`supabase/migrations/002_bookings.sql`](supabase/migrations/002_bookings.sql)
    - [`supabase/migrations/003_members.sql`](supabase/migrations/003_members.sql)
+   - [`supabase/migrations/004_member_benefit_usages.sql`](supabase/migrations/004_member_benefit_usages.sql)
 3. In **Project Settings → API**, copy:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
    - **service_role** key (secret) → `SUPABASE_SERVICE_ROLE_KEY`

@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/auth";
 import { createMember, getMembers } from "@/lib/members";
+import { getSettings, normalizeSettings } from "@/lib/settings";
 import type { CreateMemberInput } from "@/lib/types";
 
 export async function GET() {
@@ -11,8 +12,12 @@ export async function GET() {
   }
 
   try {
+    const settings = normalizeSettings(await getSettings());
     const members = await getMembers(true);
-    return NextResponse.json(members);
+    return NextResponse.json({
+      members,
+      benefits: settings.subscription.benefits,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to load members";

@@ -4,10 +4,16 @@ import path from "path";
 import { addOneMonth } from "./membership";
 import { normalizePhoneDigits } from "./phone";
 import { getSupabaseAdmin, isSupabaseConfigured } from "./supabase";
+import {
+  getBenefitUsageForPeriod,
+  getMembershipStatus,
+} from "./membership";
 import type {
   CreateMemberInput,
   Member,
+  MemberBenefitUsage,
   MemberPayment,
+  RecordBenefitUsageInput,
   RecordPaymentInput,
 } from "./types";
 
@@ -66,6 +72,14 @@ type PaymentRow = {
   created_at: string;
 };
 
+type BenefitUsageRow = {
+  id: string;
+  member_id: string;
+  benefit_name: string;
+  used_on: string;
+  created_at: string;
+};
+
 function rowToPayment(row: PaymentRow): MemberPayment {
   return {
     id: row.id,
@@ -76,7 +90,31 @@ function rowToPayment(row: PaymentRow): MemberPayment {
   };
 }
 
-function rowToMember(row: MemberRow, payments?: MemberPayment[]): Member {
+function rowToBenefitUsage(row: BenefitUsageRow): MemberBenefitUsage {
+  return {
+    id: row.id,
+    memberId: row.member_id,
+    benefitName: row.benefit_name,
+    usedOn: row.used_on,
+    createdAt: row.created_at,
+  };
+}
+
+function benefitUsageToRow(usage: MemberBenefitUsage): BenefitUsageRow {
+  return {
+    id: usage.id,
+    member_id: usage.memberId,
+    benefit_name: usage.benefitName,
+    used_on: usage.usedOn,
+    created_at: usage.createdAt,
+  };
+}
+
+function rowToMember(
+  row: MemberRow,
+  payments?: MemberPayment[],
+  benefitUsages?: MemberBenefitUsage[],
+): Member {
   return {
     id: row.id,
     memberNumber: row.member_number,
@@ -87,6 +125,7 @@ function rowToMember(row: MemberRow, payments?: MemberPayment[]): Member {
     notes: row.notes,
     createdAt: row.created_at,
     payments,
+    benefitUsages,
   };
 }
 
@@ -134,6 +173,33 @@ async function generateMemberNumber(existing: Member[]): Promise<string> {
   return `VW-${String(next).padStart(4, "0")}`;
 }
 
+async function loadBenefitUsagesForMember(
+  memberId: string,
+): Promise<MemberBenefitUsage[]> {
+  if (await useSupabaseForMembers()) {
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase
+      .from("member_benefit_usages")
+      .select("*")
+      .eq("member_id", memberId)
+      .order("used_on", { ascending: false });
+
+    if (error && error.message.includes("Could not find the table")) {
+      return [];
+    }
+
+    if (error) {
+      throw new Error(`Failed to load benefit usage: ${error.message}`);
+    }
+
+    return (data as BenefitUsageRow[]).map(rowToBenefitUsage);
+  }
+
+  const members = await readLocalMembers();
+  const member = members.find((m) => m.id === memberId);
+  return member?.benefitUsages ?? [];
+}
+
 async function loadPaymentsForMember(memberId: string): Promise<MemberPayment[]> {
   if (await useSupabaseForMembers()) {
     const supabase = getSupabaseAdmin();
@@ -155,7 +221,7 @@ async function loadPaymentsForMember(memberId: string): Promise<MemberPayment[]>
   return member?.payments ?? [];
 }
 
-export async function getMembers(includePayments = false): Promise<Member[]> {
+export async function getMembers(includeDetails = false): Promise<Member[]> {
   if (await useSupabaseForMembers()) {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
@@ -167,20 +233,24 @@ export async function getMembers(includePayments = false): Promise<Member[]> {
 
     const members = (data as MemberRow[]).map((row) => rowToMember(row));
 
-    if (!includePayments) return members;
+    if (!includeDetails) return members;
 
     return Promise.all(
       members.map(async (member) => ({
         ...member,
         payments: await loadPaymentsForMember(member.id),
+        benefitUsages: await loadBenefitUsagesForMember(member.id),
       })),
     );
   }
 
   const members = await readLocalMembers();
-  return includePayments
+  return includeDetails
     ? members
-    : members.map(({ payments: _payments, ...member }) => member);
+    : members.map(
+        ({ payments: _payments, benefitUsages: _benefitUsages, ...member }) =>
+          member,
+      );
 }
 
 export async function getMemberByPhone(phone: string): Promise<Member | null> {
@@ -198,8 +268,10 @@ export async function getMemberByPhone(phone: string): Promise<Member | null> {
     if (error) throw new Error(`Failed to look up member: ${error.message}`);
     if (!data) return null;
 
-    const payments = await loadPaymentsForMember((data as MemberRow).id);
-    return rowToMember(data as MemberRow, payments);
+    const memberId = (data as MemberRow).id;
+    const payments = await loadPaymentsForMember(memberId);
+    const benefitUsages = await loadBenefitUsagesForMember(memberId);
+    return rowToMember(data as MemberRow, payments, benefitUsages);
   }
 
   const members = await readLocalMembers();
@@ -339,7 +411,8 @@ export async function recordMemberPayment(
     }
 
     const payments = await loadPaymentsForMember(memberId);
-    return rowToMember(data as MemberRow, payments);
+    const benefitUsages = await loadBenefitUsagesForMember(memberId);
+    return rowToMember(data as MemberRow, payments, benefitUsages);
   }
 
   const members = await readLocalMembers();
@@ -355,4 +428,89 @@ export async function recordMemberPayment(
 
   await writeLocalMembers(members);
   return members[index];
+}
+
+export async function recordBenefitUsage(
+  memberId: string,
+  input: RecordBenefitUsageInput,
+  allowedBenefits: string[],
+): Promise<Member> {
+  const benefitName = input.benefitName.trim();
+  const usedOn = input.usedOn ?? new Date().toISOString().slice(0, 10);
+
+  if (!benefitName) {
+    throw new Error("Benefit name is required.");
+  }
+
+  if (!allowedBenefits.includes(benefitName)) {
+    throw new Error("Invalid membership benefit.");
+  }
+
+  const members = await getMembers(true);
+  const member = members.find((m) => m.id === memberId);
+  if (!member) {
+    throw new Error("Member not found.");
+  }
+
+  if (getMembershipStatus(member.expiresAt) !== "active") {
+    throw new Error("Membership is expired. Record a payment before logging benefits.");
+  }
+
+  const existing = getBenefitUsageForPeriod(
+    member.benefitUsages ?? [],
+    benefitName,
+    member.lastPaymentDate,
+    member.expiresAt,
+  );
+
+  if (existing) {
+    throw new Error(
+      `${benefitName} was already used on ${existing.usedOn} this membership month.`,
+    );
+  }
+
+  const usage: MemberBenefitUsage = {
+    id: randomUUID(),
+    memberId,
+    benefitName,
+    usedOn,
+    createdAt: new Date().toISOString(),
+  };
+
+  if (await useSupabaseForMembers()) {
+    const supabase = getSupabaseAdmin();
+    const { error } = await supabase
+      .from("member_benefit_usages")
+      .insert(benefitUsageToRow(usage));
+
+    if (error) {
+      throw new Error(`Failed to record benefit usage: ${error.message}`);
+    }
+
+    const { data, error: memberError } = await supabase
+      .from("members")
+      .select("*")
+      .eq("id", memberId)
+      .single();
+
+    if (memberError) {
+      throw new Error(`Failed to load member: ${memberError.message}`);
+    }
+
+    const payments = await loadPaymentsForMember(memberId);
+    const benefitUsages = await loadBenefitUsagesForMember(memberId);
+    return rowToMember(data as MemberRow, payments, benefitUsages);
+  }
+
+  const localMembers = await readLocalMembers();
+  const index = localMembers.findIndex((m) => m.id === memberId);
+  if (index === -1) throw new Error("Member not found.");
+
+  localMembers[index] = {
+    ...localMembers[index],
+    benefitUsages: [usage, ...(localMembers[index].benefitUsages ?? [])],
+  };
+
+  await writeLocalMembers(localMembers);
+  return localMembers[index];
 }

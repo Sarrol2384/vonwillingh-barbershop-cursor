@@ -65,6 +65,14 @@ export type MemberPayment = {
   createdAt: string;
 };
 
+export type MemberBenefitUsage = {
+  id: string;
+  memberId: string;
+  benefitName: string;
+  usedOn: string;
+  createdAt: string;
+};
+
 export type Member = {
   id: string;
   memberNumber: string;
@@ -75,6 +83,7 @@ export type Member = {
   notes: string | null;
   createdAt: string;
   payments?: MemberPayment[];
+  benefitUsages?: MemberBenefitUsage[];
 };
 
 export type CreateMemberInput = {
@@ -89,6 +98,11 @@ export type RecordPaymentInput = {
   paymentDate: string;
   amount?: string;
   notes?: string;
+};
+
+export type RecordBenefitUsageInput = {
+  benefitName: string;
+  usedOn?: string;
 };
 
 export type CreateBookingInput = {
