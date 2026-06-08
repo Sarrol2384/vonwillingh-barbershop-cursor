@@ -57,6 +57,40 @@ export type Booking = {
   createdAt: string;
 };
 
+export type MemberPayment = {
+  id: string;
+  memberId: string;
+  paymentDate: string;
+  amount: string;
+  createdAt: string;
+};
+
+export type Member = {
+  id: string;
+  memberNumber: string;
+  clientName: string;
+  clientPhone: string;
+  lastPaymentDate: string;
+  expiresAt: string;
+  notes: string | null;
+  createdAt: string;
+  payments?: MemberPayment[];
+};
+
+export type CreateMemberInput = {
+  clientName: string;
+  clientPhone: string;
+  paymentDate: string;
+  amount?: string;
+  notes?: string;
+};
+
+export type RecordPaymentInput = {
+  paymentDate: string;
+  amount?: string;
+  notes?: string;
+};
+
 export type CreateBookingInput = {
   clientName: string;
   clientPhone: string;

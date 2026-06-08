@@ -40,6 +40,7 @@ export function BookingSection({ settings }: Props) {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [timeError, setTimeError] = useState(false);
   const [booking, setBooking] = useState<Booking | null>(null);
 
   useEffect(() => {
@@ -49,6 +50,7 @@ export function BookingSection({ settings }: Props) {
     setLoadingSlots(true);
     setError("");
     setTime("");
+    setTimeError(false);
 
     fetch(
       `/api/bookings/slots?date=${date}&service=${encodeURIComponent(serviceName)}`,
@@ -78,15 +80,47 @@ export function BookingSection({ settings }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitting(true);
     setError("");
+    setTimeError(false);
+
+    if (!serviceName) {
+      setError("Please select a service.");
+      return;
+    }
+    if (!date) {
+      setError("Please select a date.");
+      return;
+    }
+    if (closed) {
+      setError("The shop is closed on this day. Please choose another date.");
+      return;
+    }
+    if (slots.length === 0) {
+      setError("No times available on this day. Please choose another date.");
+      return;
+    }
+    if (!time) {
+      setTimeError(true);
+      setError("Please select a time.");
+      return;
+    }
+    if (!clientName.trim()) {
+      setError("Please enter your name.");
+      return;
+    }
+    if (!clientPhone.trim()) {
+      setError("Please enter your WhatsApp number.");
+      return;
+    }
+
+    setSubmitting(true);
 
     const res = await fetch("/api/bookings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        clientName,
-        clientPhone,
+        clientName: clientName.trim(),
+        clientPhone: clientPhone.trim(),
         serviceName,
         bookingDate: date,
         bookingTime: time,
@@ -139,7 +173,9 @@ export function BookingSection({ settings }: Props) {
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <label className="block text-sm">
-            <span className="mb-1 block font-medium text-cream">Service</span>
+            <span className="mb-1 block font-medium text-cream">
+              Service <span className="text-gold">*</span>
+            </span>
             <select
               value={serviceName}
               onChange={(e) => setServiceName(e.target.value)}
@@ -155,7 +191,9 @@ export function BookingSection({ settings }: Props) {
           </label>
 
           <label className="block text-sm">
-            <span className="mb-1 block font-medium text-cream">Date</span>
+            <span className="mb-1 block font-medium text-cream">
+              Date <span className="text-gold">*</span>
+            </span>
             <input
               type="date"
               value={date}
@@ -169,7 +207,7 @@ export function BookingSection({ settings }: Props) {
 
           <div>
             <span className="mb-2 block text-sm font-medium text-cream">
-              Time
+              Time <span className="text-gold">*</span>
             </span>
             {loadingSlots ? (
               <p className="text-sm text-zinc-500">Loading times…</p>
@@ -178,12 +216,19 @@ export function BookingSection({ settings }: Props) {
             ) : slots.length === 0 ? (
               <p className="text-sm text-zinc-500">No slots available.</p>
             ) : (
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+              <div
+                className={`grid grid-cols-3 gap-2 sm:grid-cols-4 ${
+                  timeError ? "rounded-lg ring-1 ring-red-400/50 p-1" : ""
+                }`}
+              >
                 {slots.map((slot) => (
                   <button
                     key={slot}
                     type="button"
-                    onClick={() => setTime(slot)}
+                    onClick={() => {
+                      setTime(slot);
+                      setTimeError(false);
+                    }}
                     className={`rounded-lg border px-2 py-2 text-sm transition-colors ${
                       time === slot
                         ? "border-gold bg-gold/20 text-gold"
@@ -198,19 +243,22 @@ export function BookingSection({ settings }: Props) {
           </div>
 
           <label className="block text-sm">
-            <span className="mb-1 block font-medium text-cream">Your name</span>
+            <span className="mb-1 block font-medium text-cream">
+              Your name <span className="text-gold">*</span>
+            </span>
             <input
               type="text"
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
               className="w-full rounded-lg border border-zinc-600 bg-charcoal-light px-3 py-2 text-cream"
               required
+              minLength={2}
             />
           </label>
 
           <label className="block text-sm">
             <span className="mb-1 block font-medium text-cream">
-              WhatsApp number
+              WhatsApp number <span className="text-gold">*</span>
             </span>
             <input
               type="tel"
@@ -219,6 +267,7 @@ export function BookingSection({ settings }: Props) {
               placeholder="e.g. 071 123 4567"
               className="w-full rounded-lg border border-zinc-600 bg-charcoal-light px-3 py-2 text-cream"
               required
+              minLength={9}
             />
           </label>
 
@@ -230,7 +279,7 @@ export function BookingSection({ settings }: Props) {
 
           <button
             type="submit"
-            disabled={submitting || !time}
+            disabled={submitting}
             className="btn-primary w-full disabled:opacity-50"
           >
             {submitting ? "Booking…" : "Confirm booking"}

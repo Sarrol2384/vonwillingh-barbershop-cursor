@@ -28,6 +28,8 @@ Sign in at `/admin` to update:
 
 View and manage appointments at **`/admin/bookings`**.
 
+Manage monthly memberships at **`/admin/members`** — record cash payments, renewals, and view payment history.
+
 ## Deploy to Vercel + Supabase
 
 Admin saves need a database on Vercel (the server filesystem is read-only).
@@ -38,6 +40,7 @@ Admin saves need a database on Vercel (the server filesystem is read-only).
 2. Open **SQL Editor** and run both migrations:
    - [`supabase/migrations/001_business_settings.sql`](supabase/migrations/001_business_settings.sql)
    - [`supabase/migrations/002_bookings.sql`](supabase/migrations/002_bookings.sql)
+   - [`supabase/migrations/003_members.sql`](supabase/migrations/003_members.sql)
 3. In **Project Settings → API**, copy:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
    - **service_role** key (secret) → `SUPABASE_SERVICE_ROLE_KEY`
@@ -63,6 +66,7 @@ Admin saves need a database on Vercel (the server filesystem is read-only).
 
 - Clients book at **Book an Appointment** on the public site (`/#book`)
 - Kobus views upcoming bookings at **`/admin/bookings`**
+- Monthly members are managed at **`/admin/members`** (cash payment recorded in admin; clients view their card on the public site under **Member Deal**)
 - **WhatsApp only** — confirmations and 24h reminders go to the client's phone via Meta WhatsApp Cloud API:
   1. Create a [Meta Business](https://business.facebook.com) app with WhatsApp
   2. Add approved **UTILITY** templates:

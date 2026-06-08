@@ -130,6 +130,12 @@ export function SettingsForm({ initialSettings }: Props) {
             Bookings
           </a>
           <a
+            href="/admin/members"
+            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50"
+          >
+            Members
+          </a>
+          <a
             href="/"
             target="_blank"
             className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50"

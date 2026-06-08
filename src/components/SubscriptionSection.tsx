@@ -1,12 +1,30 @@
+"use client";
+
+import { useState } from "react";
+import { MembershipCard } from "@/components/MembershipCard";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import type { BusinessSettings } from "@/lib/types";
+import type { MembershipStatus } from "@/lib/membership";
 
 type Props = {
   settings: BusinessSettings;
 };
 
+type LookupResult = {
+  memberNumber: string;
+  clientName: string;
+  lastPaymentDate: string;
+  expiresAt: string;
+  status: MembershipStatus;
+};
+
 export function SubscriptionSection({ settings }: Props) {
   const { subscription } = settings;
+  const [phone, setPhone] = useState("");
+  const [lookup, setLookup] = useState<LookupResult | null>(null);
+  const [lookupError, setLookupError] = useState("");
+  const [lookingUp, setLookingUp] = useState(false);
+
   if (!subscription.enabled) return null;
 
   const whatsappUrl = buildWhatsAppUrl(
@@ -14,8 +32,28 @@ export function SubscriptionSection({ settings }: Props) {
     subscription.whatsappMessage,
   );
 
+  async function handleLookup(e: React.FormEvent) {
+    e.preventDefault();
+    setLookingUp(true);
+    setLookupError("");
+    setLookup(null);
+
+    const res = await fetch(
+      `/api/members/lookup?phone=${encodeURIComponent(phone.trim())}`,
+    );
+    const data = await res.json();
+    setLookingUp(false);
+
+    if (!res.ok) {
+      setLookupError(data.error ?? "Could not find your membership.");
+      return;
+    }
+
+    setLookup(data as LookupResult);
+  }
+
   return (
-    <section className="px-5 py-8">
+    <section className="px-5 py-8" id="membership">
       <div className="card relative mx-auto max-w-lg overflow-hidden p-6">
         <div
           className="pointer-events-none absolute inset-0 opacity-10"
@@ -64,6 +102,42 @@ export function SubscriptionSection({ settings }: Props) {
           >
             Subscribe on WhatsApp
           </a>
+
+          <div className="mt-8 border-t border-zinc-700/80 pt-6">
+            <h3 className="text-sm font-semibold text-cream">
+              Already a member?
+            </h3>
+            <p className="mt-1 text-sm text-zinc-400">
+              Enter your WhatsApp number to view your membership card.
+            </p>
+
+            <form onSubmit={handleLookup} className="mt-4 space-y-3">
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="e.g. 071 123 4567"
+                className="w-full rounded-lg border border-zinc-600 bg-charcoal-light px-3 py-2 text-cream"
+                required
+              />
+              {lookupError && (
+                <p className="text-sm text-red-300">{lookupError}</p>
+              )}
+              <button
+                type="submit"
+                disabled={lookingUp}
+                className="w-full rounded-lg border border-gold/50 px-4 py-2 text-sm font-medium text-gold hover:bg-gold/10 disabled:opacity-50"
+              >
+                {lookingUp ? "Looking up…" : "View my membership card"}
+              </button>
+            </form>
+
+            {lookup && (
+              <div className="mt-5">
+                <MembershipCard settings={settings} member={lookup} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </section>
