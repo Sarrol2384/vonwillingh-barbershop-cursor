@@ -1,4 +1,5 @@
 import { benefitNamesMatch, formatMembershipDate } from "@/lib/membership";
+import { membershipBenefitCopy } from "@/lib/membership-copy";
 
 type BenefitUsage = {
   benefitName: string;
@@ -24,6 +25,7 @@ export function BenefitUsageList({
         const usage = usages.find((item) =>
           benefitNamesMatch(item.benefitName, benefit),
         );
+        const copy = membershipBenefitCopy(benefit);
 
         return (
           <li
@@ -34,7 +36,10 @@ export function BenefitUsageList({
                 : "border-zinc-200 bg-zinc-50"
             }`}
           >
-            <p className={isDark ? "text-cream" : "text-zinc-900"}>{benefit}</p>
+            <p className={isDark ? "text-cream" : "text-zinc-900"}>{copy.title}</p>
+            <p className={`mt-0.5 text-xs ${isDark ? "text-zinc-400" : "text-zinc-600"}`}>
+              {copy.detail}
+            </p>
             <p className={`mt-0.5 text-xs ${isDark ? "text-zinc-400" : "text-zinc-600"}`}>
               {usage
                 ? `Used on ${formatMembershipDate(usage.usedOn)}`

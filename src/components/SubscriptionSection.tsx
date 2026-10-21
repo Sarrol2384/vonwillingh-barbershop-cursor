@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MembershipCard } from "@/components/MembershipCard";
+import { membershipBenefitCopy } from "@/lib/membership-copy";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import type { BusinessSettings } from "@/lib/types";
 import type { MembershipStatus } from "@/lib/membership";
@@ -82,18 +83,29 @@ export function SubscriptionSection({ settings }: Props) {
             </span>
           </div>
 
-          <ul className="mt-5 space-y-2">
-            {subscription.benefits.map((benefit) => (
-              <li
-                key={benefit}
-                className="flex items-center gap-3 text-sm text-cream"
-              >
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold/20 text-xs text-gold">
-                  ✓
-                </span>
-                {benefit}
-              </li>
-            ))}
+          <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
+            What&apos;s included each month
+          </p>
+          <ul className="mt-3 space-y-3">
+            {subscription.benefits.map((benefit) => {
+              const copy = membershipBenefitCopy(benefit);
+              return (
+                <li
+                  key={benefit}
+                  className="flex items-start gap-3 text-sm text-cream"
+                >
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold/20 text-xs text-gold">
+                    ✓
+                  </span>
+                  <span>
+                    <span className="font-medium">{copy.title}</span>
+                    <span className="mt-0.5 block text-zinc-400">
+                      {copy.detail}
+                    </span>
+                  </span>
+                </li>
+              );
+            })}
           </ul>
 
           <a

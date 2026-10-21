@@ -8,12 +8,21 @@ import { ServicesSection } from "@/components/ServicesSection";
 import { SubscriptionSection } from "@/components/SubscriptionSection";
 import { StickyBookingBar } from "@/components/StickyBookingBar";
 import { getSettings } from "@/lib/settings";
+import { buildHairSalonJsonLd } from "@/lib/structured-data";
 
 export default async function HomePage() {
   const settings = await getSettings();
+  const jsonLd = JSON.stringify(buildHairSalonJsonLd(settings)).replace(
+    /</g,
+    "\\u003c",
+  );
 
   return (
     <main className="min-h-screen bg-charcoal pb-28">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd }}
+      />
       <BarberPole />
       <Hero settings={settings} />
       <MeetBarber settings={settings} />

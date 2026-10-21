@@ -4,7 +4,7 @@
     "friday": {
       "open": "09:00",
       "close": "18:00",
-      "closed": true
+      "closed": false
     },
     "monday": {
       "open": "09:00",
@@ -22,7 +22,7 @@
       "closed": true
     },
     "saturday": {
-      "open": "17:00",
+      "open": "16:30",
       "close": "20:00",
       "closed": false
     },
@@ -37,14 +37,14 @@
       "closed": true
     }
   },
-  "phone": "+27 711167253",
+  "phone": "+27 71 116 7253",
   "barber": {
-    "bio": "Kobus Von Willingh has spent a decade perfecting his craft behind the chair. Known for clean fades, sharp line-ups, and cuts tailored to you — not just the trend — he brings old-school technique and modern style to every appointment. Calm, focused, and detail-driven, Kobus makes sure you leave looking sharp and feeling confident.",
+    "bio": "Known for clean fades, sharp line-ups, and cuts tailored to you — not just the trend — he brings old-school technique and modern style to every appointment. Calm, focused, and detail-driven, Kobus makes sure you leave looking sharp and feeling confident.",
     "name": "Kobus Von Willingh",
     "photo": "/images/kobus-von-willingh.png",
     "title": "Owner & Master Barber",
-    "tagline": "10 years behind the chair. Precision cuts. Classic style.",
-    "bioShort": "With 10 years of barbering experience, Kobus Von Willingh delivers clean fades, sharp details, and cuts that suit your style — every time.",
+    "tagline": "Precision cuts. Classic style.",
+    "bioShort": "Kobus Von Willingh delivers clean fades, sharp details, and cuts that suit your style — every time.",
     "yearsExperience": 10
   },
   "social": {
@@ -72,7 +72,7 @@
       "name": "Trim & Shave",
       "price": "R50",
       "duration": "15 min",
-      "description": "Neat beard sculpting and razor edge detail."
+      "description": "Neat beard sculpting and a razor-edge finish."
     },
     {
       "name": "Haircut & Beard Combo",
@@ -96,7 +96,7 @@
       "name": "Cheesekop",
       "price": "R60",
       "duration": "20 min",
-      "description": "Blade or razor shave-no hot towel"
+      "description": "Blade or razor shave. No hot towel."
     },
     {
       "name": "Hot Towel Cheesekop",
@@ -114,11 +114,11 @@
       "name": "House Calls",
       "price": "R150",
       "duration": "60 min",
-      "description": "Kobus comes to you — full barber service at your home or office."
+      "description": "Kobus comes to you — full barber service at your home or office. The area and travel fee are confirmed via WhatsApp. At least 24 hours' notice is required."
     }
   ],
   "timezone": "Africa/Johannesburg",
-  "whatsapp": "+27 711167253",
+  "whatsapp": "+27 71 116 7253",
   "businessName": "VonWillingh Barbershop",
   "subscription": {
     "price": "R30",

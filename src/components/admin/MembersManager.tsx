@@ -54,8 +54,31 @@ export function MembersManager() {
   }, []);
 
   useEffect(() => {
-    loadMembers();
-  }, [loadMembers]);
+    let cancelled = false;
+
+    fetch("/api/members")
+      .then(async (res) => {
+        const data = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          setError(data.error ?? "Failed to load members.");
+          setLoading(false);
+          return;
+        }
+        setMembers(data.members as Member[]);
+        setBenefits((data.benefits as string[]) ?? []);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setError("Failed to load members.");
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filtered = useMemo(() => {
     return members.filter((member) => {
