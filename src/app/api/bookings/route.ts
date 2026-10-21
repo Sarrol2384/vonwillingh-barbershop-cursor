@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/auth";
 import { createBooking, getBookings } from "@/lib/bookings";
 import { sendBookingConfirmation } from "@/lib/reminders";
-import { parseServiceDuration } from "@/lib/service-duration";
+import { noticeWindowMs, parseServiceDuration } from "@/lib/service-duration";
 import { getAvailableSlots } from "@/lib/slots";
 import { getSettings } from "@/lib/settings";
 import type { CreateBookingInput } from "@/lib/types";
@@ -51,25 +51,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid service." }, { status: 400 });
     }
 
-    const serviceDuration =
-      body.serviceDuration ?? parseServiceDuration(service.duration);
+    const serviceDuration = parseServiceDuration(service.duration);
 
     const existing = await getBookings(body.bookingDate, body.bookingDate);
-    const { slots, closed } = getAvailableSlots(
+    const availability = getAvailableSlots(
       settings,
       body.bookingDate,
       serviceDuration,
       existing,
+      { leadTimeMs: noticeWindowMs(service.name) },
     );
 
-    if (closed) {
+    if (availability.closed || availability.reason === "notice") {
       return NextResponse.json(
-        { error: "The shop is closed on that day." },
+        { error: availability.message },
         { status: 400 },
       );
     }
 
-    if (!slots.includes(body.bookingTime)) {
+    if (!availability.slots.includes(body.bookingTime)) {
       return NextResponse.json(
         { error: "That time slot is no longer available." },
         { status: 409 },

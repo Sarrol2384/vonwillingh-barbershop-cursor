@@ -29,7 +29,7 @@ function isMembersTableMissing(message: string): boolean {
   );
 }
 
-async function useSupabaseForMembers(): Promise<boolean> {
+async function supabaseMembersEnabled(): Promise<boolean> {
   if (!isSupabaseConfigured()) return false;
   if (membersTableAvailable === false) return false;
   if (membersTableAvailable === true) return true;
@@ -177,7 +177,7 @@ async function generateMemberNumber(existing: Member[]): Promise<string> {
 async function loadBenefitUsagesForMember(
   memberId: string,
 ): Promise<MemberBenefitUsage[]> {
-  if (await useSupabaseForMembers()) {
+  if (await supabaseMembersEnabled()) {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from("member_benefit_usages")
@@ -202,7 +202,7 @@ async function loadBenefitUsagesForMember(
 }
 
 async function loadPaymentsForMember(memberId: string): Promise<MemberPayment[]> {
-  if (await useSupabaseForMembers()) {
+  if (await supabaseMembersEnabled()) {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from("member_payments")
@@ -223,7 +223,7 @@ async function loadPaymentsForMember(memberId: string): Promise<MemberPayment[]>
 }
 
 export async function getMembers(includeDetails = false): Promise<Member[]> {
-  if (await useSupabaseForMembers()) {
+  if (await supabaseMembersEnabled()) {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from("members")
@@ -246,19 +246,25 @@ export async function getMembers(includeDetails = false): Promise<Member[]> {
   }
 
   const members = await readLocalMembers();
-  return includeDetails
-    ? members
-    : members.map(
-        ({ payments: _payments, benefitUsages: _benefitUsages, ...member }) =>
-          member,
-      );
+  if (includeDetails) return members;
+
+  return members.map((member) => ({
+    id: member.id,
+    memberNumber: member.memberNumber,
+    clientName: member.clientName,
+    clientPhone: member.clientPhone,
+    lastPaymentDate: member.lastPaymentDate,
+    expiresAt: member.expiresAt,
+    notes: member.notes,
+    createdAt: member.createdAt,
+  }));
 }
 
 export async function getMemberByPhone(phone: string): Promise<Member | null> {
   const normalized = normalizePhoneDigits(phone);
   if (!normalized) return null;
 
-  if (await useSupabaseForMembers()) {
+  if (await supabaseMembersEnabled()) {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from("members")
@@ -306,7 +312,7 @@ export async function createMember(input: CreateMemberInput): Promise<Member> {
     createdAt: new Date().toISOString(),
   };
 
-  if (await useSupabaseForMembers()) {
+  if (await supabaseMembersEnabled()) {
     const allMembers = await getMembers();
     const memberNumber = await generateMemberNumber(allMembers);
     const memberId = randomUUID();
@@ -387,7 +393,7 @@ export async function recordMemberPayment(
     createdAt: new Date().toISOString(),
   };
 
-  if (await useSupabaseForMembers()) {
+  if (await supabaseMembersEnabled()) {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from("members")
@@ -479,7 +485,7 @@ export async function recordBenefitUsage(
     createdAt: new Date().toISOString(),
   };
 
-  if (await useSupabaseForMembers()) {
+  if (await supabaseMembersEnabled()) {
     const supabase = getSupabaseAdmin();
     const { error } = await supabase
       .from("member_benefit_usages")

@@ -52,8 +52,36 @@ export function BookingsManager() {
   }, []);
 
   useEffect(() => {
-    loadBookings();
-  }, [loadBookings]);
+    let cancelled = false;
+    const from = new Date().toISOString().slice(0, 10);
+    const toDate = new Date();
+    toDate.setDate(toDate.getDate() + 30);
+    const to = toDate.toISOString().slice(0, 10);
+
+    fetch(`/api/bookings?from=${from}&to=${to}`)
+      .then(async (res) => {
+        const data = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          setError(data.error ?? "Failed to load bookings.");
+          setLoading(false);
+          return;
+        }
+        setBookings(
+          (data as Booking[]).filter((booking) => booking.status !== "cancelled"),
+        );
+        setLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setError("Failed to load bookings.");
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function updateStatus(id: string, status: BookingStatus) {
     setUpdatingId(id);

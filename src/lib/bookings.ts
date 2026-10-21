@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
+import { appointmentsOverlap } from "./slots";
 import { getSupabaseAdmin, isSupabaseConfigured } from "./supabase";
 import type { Booking, BookingStatus, CreateBookingInput } from "./types";
 
@@ -15,7 +16,7 @@ function isBookingsTableMissing(message: string): boolean {
   );
 }
 
-async function useSupabaseForBookings(): Promise<boolean> {
+async function supabaseBookingsEnabled(): Promise<boolean> {
   if (!isSupabaseConfigured()) return false;
   if (bookingsTableAvailable === false) return false;
   if (bookingsTableAvailable === true) return true;
@@ -102,8 +103,23 @@ async function writeLocalBookings(bookings: Booking[]): Promise<void> {
   await writeFile(DATA_PATH, JSON.stringify(bookings, null, 2), "utf-8");
 }
 
+function hasDurationConflict(booking: Booking, existing: Booking[]): boolean {
+  return existing.some(
+    (other) =>
+      other.status === "confirmed" &&
+      other.bookingDate === booking.bookingDate &&
+      other.id !== booking.id &&
+      appointmentsOverlap(
+        other.bookingTime,
+        other.serviceDuration,
+        booking.bookingTime,
+        booking.serviceDuration,
+      ),
+  );
+}
+
 export async function getBookings(from?: string, to?: string): Promise<Booking[]> {
-  if (await useSupabaseForBookings()) {
+  if (await supabaseBookingsEnabled()) {
     const supabase = getSupabaseAdmin();
     let query = supabase
       .from("bookings")
@@ -150,7 +166,12 @@ export async function createBooking(input: CreateBookingInput): Promise<Booking>
     createdAt: new Date().toISOString(),
   };
 
-  if (await useSupabaseForBookings()) {
+  const sameDay = await getBookings(booking.bookingDate, booking.bookingDate);
+  if (hasDurationConflict(booking, sameDay)) {
+    throw new Error("That time slot is already booked. Please choose another.");
+  }
+
+  if (await supabaseBookingsEnabled()) {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from("bookings")
@@ -170,16 +191,6 @@ export async function createBooking(input: CreateBookingInput): Promise<Booking>
   }
 
   const existing = await readLocalBookings();
-  const overlap = existing.some(
-    (b) =>
-      b.status === "confirmed" &&
-      b.bookingDate === booking.bookingDate &&
-      b.bookingTime === booking.bookingTime,
-  );
-  if (overlap) {
-    throw new Error("That time slot is already booked. Please choose another.");
-  }
-
   existing.push(booking);
   await writeLocalBookings(existing);
   return booking;
@@ -189,7 +200,7 @@ export async function updateBookingStatus(
   id: string,
   status: BookingStatus,
 ): Promise<Booking> {
-  if (await useSupabaseForBookings()) {
+  if (await supabaseBookingsEnabled()) {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from("bookings")
@@ -228,7 +239,7 @@ export async function getBookingsNeedingReminder(
 }
 
 export async function markReminderSent(id: string): Promise<void> {
-  if (await useSupabaseForBookings()) {
+  if (await supabaseBookingsEnabled()) {
     const supabase = getSupabaseAdmin();
     const { error } = await supabase
       .from("bookings")
